@@ -12,7 +12,8 @@ if(!process.env.MONGO_URI){
 const config = {
 
     MONGO_URI : String(process.env.MONGO_URI),
-    PORT : String(process.env.PORT)
+    PORT : String(process.env.PORT),
+    JWT_SECRET : String(process.env.JWT_SECRET)
 
 }
 

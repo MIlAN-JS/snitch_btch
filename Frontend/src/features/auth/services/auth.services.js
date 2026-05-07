@@ -10,7 +10,7 @@ const api = axios.create({
     
     try {
 
-        const response = await api.post("/register",data )
+        const response = await api.post("/register", data )
         return response.data
     } catch (error) {
 

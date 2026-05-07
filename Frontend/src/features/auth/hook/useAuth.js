@@ -1,17 +1,19 @@
 
-import useDispatch from "@reduxjs/toolkit"
+import { useDispatch } from "react-redux";
+import { authFailure, authStart, authSuccess } from "../state/auth.slice.js";
+import { registerUserService } from "../services/auth.services.js";
 
 
 const useAuth = ()=>{
 
     const dispatch = useDispatch()
 
-    registerHandler = async({}) => {
+  const registerHandler = async({fullName , email , contact , password,isSeller}) => {
         try {
 
         dispatch(authStart())
 
-        const response = await registerUserService({})
+        const response = await registerUserService({fullName , email , contact , password,isSeller})
 
         dispatch(authSuccess(response.user))
             
@@ -28,3 +30,6 @@ const useAuth = ()=>{
     }
 
 }
+
+
+export default useAuth;
