@@ -57,5 +57,36 @@ const registerController = asyncHandler(async(req , res , next) => {
 })
 
 
+const LoginController = asyncHandler(async(req , res , next) => {
+    
+    const { email , password } = req.body
+    console.log(email)
 
-export {registerController}
+    const user = await userModel.findOne({email}).select("+password");
+
+    console.log(user)
+
+    if(!user){
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await user.comparePassword(password)
+ console.log(isMatch)
+    if(!isMatch){
+        return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = createToken(user._id)
+
+    res.cookie("token" , token)
+
+    res.status(200).json({
+        message: "User logged in successfully",
+        user,
+    })
+
+})
+
+
+
+export {registerController, LoginController}
