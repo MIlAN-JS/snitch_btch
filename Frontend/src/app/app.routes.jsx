@@ -20,11 +20,11 @@ const router = createBrowserRouter([
     },
     {
         path: "/register",
-        element: <AuthChecker authentication = {false} ><RegisterPage/></AuthChecker>
+        element:<RegisterPage/>
     },
     {
         path: "/login",
-        element: <AuthChecker authentication = {false} ><LoginPage/></AuthChecker>
+        element: <LoginPage/>
     }
     
 
