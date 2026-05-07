@@ -1,7 +1,7 @@
 
 import { useDispatch } from "react-redux";
 import { authFailure, authStart, authSuccess, clearError } from "../state/auth.slice.js";
-import { registerUserService } from "../services/auth.services.js";
+import { registerUserService, loginUserService } from "../services/auth.services.js";
 
 
 const useAuth = ()=>{
@@ -28,7 +28,7 @@ const useAuth = ()=>{
 
         dispatch(authStart())
 
-        const response = await registerUserService({email , password})
+        const response = await loginUserService({email , password})
 
         dispatch(authSuccess(response.user))
         dispatch(clearError())
