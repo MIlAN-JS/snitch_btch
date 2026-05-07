@@ -87,6 +87,28 @@ const LoginController = asyncHandler(async(req , res , next) => {
 
 })
 
+const getUserController = asyncHandler(async(req , res , next)=>{
+
+    const userId = req.user
+
+    // check if user exists
+
+    const user = await userModel.findById(userId)
+
+      // if user not found
+      if (!user) {
+         return res.status(401).json({
+            message: "User not found"
+         });
+      }
+    
+      res.status(200).json({
+         message: "User fetched successfully",
+         user,
+      })
+      
+})
 
 
-export {registerController, LoginController}
+
+export {registerController, LoginController , getUserController}
