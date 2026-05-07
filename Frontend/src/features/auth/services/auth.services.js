@@ -32,8 +32,23 @@ const loginUserService = async(data)=>{
     }
 
 }
+const getUserService = async()=>{
+
+    try {
+
+        const response = await api.get("/get-user")
+        return response.data
+        
+    } catch (error) {
+        throw error
+        
+    }
+
+}
 
 
 
 
-export {registerUserService , loginUserService}
+
+
+export {registerUserService , loginUserService , getUserService}
