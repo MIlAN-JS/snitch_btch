@@ -19,7 +19,21 @@ const api = axios.create({
     }
 }
 
+const loginUserService = async(data)=>{
+
+    try {
+
+        const response = await api.post("/login",data)
+        return response.data
+        
+    } catch (error) {
+        throw error
+        
+    }
+
+}
 
 
 
-export {registerUserService}
+
+export {registerUserService , loginUserService}

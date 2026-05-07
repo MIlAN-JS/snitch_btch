@@ -1,7 +1,7 @@
 
 import { useDispatch } from "react-redux";
-import { authFailure, authStart, authSuccess } from "../state/auth.slice.js";
-import { registerUserService } from "../services/auth.services.js";
+import { authFailure, authStart, authSuccess, clearError } from "../state/auth.slice.js";
+import { registerUserService, loginUserService } from "../services/auth.services.js";
 
 
 const useAuth = ()=>{
@@ -23,10 +23,27 @@ const useAuth = ()=>{
 
         }
     }
+  const loginHandler = async({email, password}) => {
+        try {
+
+        dispatch(authStart())
+
+        const response = await loginUserService({email , password})
+
+        dispatch(authSuccess(response.user))
+        dispatch(clearError())
+            
+        } catch (error) {
+            dispatch(authFailure(error.message))
+            throw error
+
+        }
+    }
 
 
     return {
-        registerHandler
+        registerHandler,
+        loginHandler
     }
 
 }
