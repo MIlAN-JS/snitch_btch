@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import userModel from "../models/user.model.js";
 import { createToken } from "../utils/generateJwtToken.js";
-
+import { findOrCreateUser } from "../services/auth.services.js";
 
 const registerController = asyncHandler(async(req , res , next) => {
     
@@ -109,6 +109,37 @@ const getUserController = asyncHandler(async(req , res , next)=>{
       
 })
 
+const googleCallbackController = async (req, res, next) => {
+
+  try {
+
+    const userData = req.user;
+
+  if (!userData) {
+    return res.redirect("http://localhost:5173/login");
+  }
+
+  console.log(userData)
+  const user = await findOrCreateUser({userData , provider : "google"});
+
+  const token = createToken(user._id);
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: false, // 
+    sameSite: "lax",
+  });
+
+  return res.redirect("http://localhost:5173/"); // changed from login to your route
+    
+  } catch (error) {
+
+    console.log(error)
+    next(error)
+    
+  }
+};
 
 
-export {registerController, LoginController , getUserController}
+
+export {registerController, LoginController , getUserController,googleCallbackController}

@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
 
     fullName : {
         type : String, 
-        required : true,
+        
     }, 
     email : {
         type : String, 
@@ -16,18 +16,24 @@ const userSchema = new mongoose.Schema({
     }, 
     contact : {
         type : Number,
-        required : true,
+        
         unique : true
     }, 
     password : {
         type : String,
-        required : true, 
+        
         select : false
     }, 
     role : {
         type : String , 
         enum : ["buyer", "seller"], 
         default : "buyer"
+    }, 
+    googleId :{
+        type : String
+    }, 
+    userImg : {
+        type : String
     }
 
 }, {timestamps: true})

@@ -1,18 +1,15 @@
 import {Strategy as GoogleStrategy} from "passport-google-oauth20"
 import passport from "passport"
-import config from "./config"
+import config from "./config.js"
 
 passport.use(new GoogleStrategy({
-    clientID : config.GOOGle_CLIENT_ID,
+    clientID: config.GOOGlE_CLIENT_ID,
     clientSecret : config.GOOGLE_CLIENT_SECRET,
     callbackURL : config.GOOGLE_CALLBACK_URL
 },
 
 async (accessToken, refreshToken, profile, done) => {
   try {
-
-   
- 
 
    return done(null, profile);
 
