@@ -8,10 +8,10 @@ import { getSellerProductsService } from "../services/product.services.js"
 
 
 const createProductController = asyncHandler(async (req, res) => {
-        const {title , description  , amount ,  currency} = req.body
+        const {title , description  , amount ,  currency } = req.body
         const userId = req.user
         console.log(userId)
-        
+        console.log(req.files)
 
        const images = await  Promise.all(req.files.map(async(file)=>{
             return await uploadFile({
@@ -52,10 +52,21 @@ const getProductController = asyncHandler(async(req,res)=>{
     })
 })
 
+ const getAllProductsController = asyncHandler(async(req,res)=>{
+    const products = await productModel.find()
+
+    res.status(200).json({
+
+        products,
+        message : "success getting products"
+        
+    })
+})
 
 
 
 export {
     createProductController, 
-    getProductController
+    getProductController, 
+    getAllProductsController
 }
