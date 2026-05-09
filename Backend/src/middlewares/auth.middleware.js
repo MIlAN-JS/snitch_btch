@@ -43,3 +43,44 @@ export const checkUser = async (req, res, next) => {
    }
 
 };
+
+
+export const checkSeller = async(req , res , next)=>{
+
+   try {
+
+      const token = req.cookies.token;
+       // if token not found
+      if (!token) {
+         return res.status(401).json({
+            message: "Unauthorized access"
+         });
+      }
+
+      // verify token
+      const decoded = jwt.verify(
+         token,
+         config.JWT_SECRET
+      );
+
+      if (decoded.role !== "seller") {
+         return res.status(401).json({
+            message: "Unauthorized access only seller can create product"
+         });
+      }
+
+      req.user = decoded.id;
+      next();
+
+
+   } catch (error) {
+
+      return res.status(401).json({
+         message: "Invalid token"
+      });
+      
+   }
+     
+
+}
+

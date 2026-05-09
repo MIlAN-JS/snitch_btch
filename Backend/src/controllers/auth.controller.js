@@ -122,7 +122,7 @@ const googleCallbackController = async (req, res, next) => {
   console.log(userData)
   const user = await findOrCreateUser({userData , provider : "google"});
 
-  const token = createToken(user._id);
+  const token = createToken({userID : user._id , role : user.role});
 
   res.cookie("token", token, {
     httpOnly: true,
