@@ -1,18 +1,21 @@
 
-import {createProductService , getSellerProductsService} from "../services/product.services.js"
-
-
-
+import { createProductService, getSellerProductsService } from "../services/product.service.js"
+import {useDispatch} from "react-redux"
+import { productFailure, productStart, productSuccess,clearError } from "../state/product.slice.js"
 
 const useProduct = () => {
     const dispatch = useDispatch()
 
     const createProductHandler = async(productData)=>{
+
+        
+        
+      
         try {
             
             dispatch(productStart())
             const response = await createProductService(productData)
-            dispatch(productSuccess(response.products))
+            dispatch(productSuccess(response.newProduct))
             dispatch(clearError())
 
             

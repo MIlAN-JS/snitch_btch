@@ -32,6 +32,7 @@ const useAuth = ()=>{
 
         dispatch(authSuccess(response.user))
         dispatch(clearError())
+        return response.user
             
         } catch (error) {
             dispatch(authFailure(error.message))

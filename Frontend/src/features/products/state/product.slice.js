@@ -17,7 +17,7 @@ const productSlice = createSlice({
         }, 
         productSuccess : (state , action)=>{
             state.loading = false
-            state.products = action.payload
+            state.SellerProducts.push(action.payload)
         }, 
         productFailure : (state , action)=>{
             state.loading = false

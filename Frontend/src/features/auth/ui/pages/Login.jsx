@@ -1,12 +1,13 @@
 import { useState } from "react";
 import useAuth from "../../hook/useAuth";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+const loading = useSelector(state => state.auth.loading)
 
   const navigate = useNavigate()
   const handleChange = (e) => {
@@ -14,22 +15,28 @@ export default function LoginPage() {
   };
 
   const {loginHandler}= useAuth()
+  
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    setLoading(true);
-
-    loginHandler({
+  
+    const user = await loginHandler({
       email: form.email, 
       password : form.password
     })
-    
-  
-    setTimeout(() => {
 
-      setLoading(false);
-      navigate("/")
-    }, 1500);
+    console.log(user, "user is ")
+    
+     if(user.role == "buyer"){
+        navigate("/")
+      }else if(user.role =="seller"){
+        navigate("/dashboard")
+      }
+
+  
+ 
+     
+    
 
     
   };

@@ -5,14 +5,17 @@ import LoginPage from "../features/auth/ui/pages/Login.jsx";
 
 import Random from "../features/auth/ui/pages/Random.jsx";
 import Public from "./Public.jsx";
-import Private from "./Private.jsx";
 
+import CreateProductPage from "../features/products/ui/pages/CreateProduct.jsx";
+
+import Protected from "../features/auth/ui/components/Protected.jsx";
+import SellerDashboard from "../features/products/ui/pages/Dashboard.jsx";
 
 const router = createBrowserRouter([
 
     {
         path: "/",
-        element:<Private><App/></Private> , 
+        element:<App/>,
         children : [
             {
                 path: "/random",
@@ -27,6 +30,18 @@ const router = createBrowserRouter([
     {
         path: "/login",
         element: <Public><LoginPage/></Public>
+    }, 
+    {
+        path: "/create-product", 
+        element:<Protected role="seller"> <CreateProductPage/> </Protected>
+    }, 
+    {
+    path: "*", 
+    element: <div>404 not found</div>
+    }, 
+    {
+        path: "/dashboard",
+        element:<Protected role="seller"> <SellerDashboard/> </Protected>
     }
     
 
