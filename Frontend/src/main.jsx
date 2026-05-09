@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux'
 
 function Root() {
 
-  const { getUserHandler } = useAuth();
+const { getUserHandler } = useAuth();
 const user = useSelector((state) => state.auth.user);
 console.log(user)
   useEffect(() => {

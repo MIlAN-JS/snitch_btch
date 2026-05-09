@@ -2,7 +2,7 @@ import { useState } from "react";
 import useAuth from "../../hook/useAuth";
 import {useNavigate} from "react-router-dom"
 import { googleLoginService } from "../../services/auth.services";
-
+import { useSelector } from "react-redux";
 
  function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +14,7 @@ import { googleLoginService } from "../../services/auth.services";
     password: "",
   });
   const navigate = useNavigate()
+  const loading = useSelector(state => state.auth.loading)
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -54,6 +55,7 @@ import { googleLoginService } from "../../services/auth.services";
   };
 
   return (
+  loading ? <div>loading</div> :
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
 
