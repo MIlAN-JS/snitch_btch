@@ -20,7 +20,7 @@ const createProductService = async(productData)=>{
 }
 
 
-const getSellerProduct = async()=>{
+const getSellerProductsService = async()=>{
 
     try {
 
@@ -40,5 +40,5 @@ const getSellerProduct = async()=>{
 
 export {
     createProductService , 
-    getSellerProduct
+    getSellerProductsService
 }
