@@ -45,10 +45,11 @@ export const checkUser = async (req, res, next) => {
 };
 
 
+
 export const checkSeller = async(req , res , next)=>{
 
    try {
-
+  
       const token = req.cookies.token;
        // if token not found
       if (!token) {
@@ -70,6 +71,7 @@ export const checkSeller = async(req , res , next)=>{
       }
 
       req.user = decoded.id;
+
       next();
 
 

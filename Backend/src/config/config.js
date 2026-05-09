@@ -16,7 +16,8 @@ const config = {
     JWT_SECRET : String(process.env.JWT_SECRET), 
     GOOGlE_CLIENT_ID : String(process.env.GOOGLE_CLIENT_ID),
     GOOGLE_CLIENT_SECRET : String(process.env.GOOGLE_CLIENT_SECRET),
-    GOOGLE_CALLBACK_URL : String(process.env.GOOGLE_CALLBACK_URL)
+    GOOGLE_CALLBACK_URL : String(process.env.GOOGLE_CALLBACK_URL), 
+    IMAGEKIT_PRIVATE_KEY : String(process.env.IMAGEKIT_PRIVATE_KEY),
 
 }
 

@@ -34,7 +34,7 @@ const registerController = asyncHandler(async(req , res , next) => {
 
         //create token and send response
 
-        const token = createToken(user._id)
+         const token = createToken({userId : user._id , role : user.role});
 
         res.cookie("token" , token)
 
@@ -76,7 +76,7 @@ const LoginController = asyncHandler(async(req , res , next) => {
         return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = createToken(user._id)
+    const token = createToken({userId : user._id , role : user.role});
 
     res.cookie("token" , token)
 

@@ -10,10 +10,12 @@ const authRouter = Router();
 authRouter.post("/register",validateRegisterUser, registerController )
 authRouter.post("/login",validateLoginUser ,LoginController)
 authRouter.get("/get-user", checkUser, getUserController)
-authRouter.get("/google",passport.authenticate("google", {
-    scope: ["profile", "email"],
-    session : false
-  }))
+
+  authRouter.get("/google",passport.authenticate("google", {
+      scope: ["profile", "email"],
+      session : false
+    }))
+
 authRouter.get("/google/callback" , passport.authenticate("google",
      {
     failureRedirect: "/login",
