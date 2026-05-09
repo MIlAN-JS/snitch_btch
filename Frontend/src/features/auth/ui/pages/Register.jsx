@@ -1,6 +1,7 @@
 import { useState } from "react";
 import useAuth from "../../hook/useAuth";
 import {useNavigate} from "react-router-dom"
+import { googleLoginService } from "../../services/auth.services";
 
 
  function RegisterPage() {
@@ -244,6 +245,9 @@ import {useNavigate} from "react-router-dom"
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
+            onClick={()=>{
+                googleLoginService()
+            }}
             className="h-10 flex items-center justify-center gap-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
