@@ -1,6 +1,7 @@
 import { uploadFile } from "../services/fileUpload.services.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import productModel from "../models/product.model.js"
+import { getSellerProductsService } from "../services/product.services.js"
 
 
 
@@ -40,8 +41,21 @@ const createProductController = asyncHandler(async (req, res) => {
     })
 
 
+const getProductController = asyncHandler(async(req,res)=>{
+    const seller = req.user
+
+    const products = await getSellerProductsService(seller)
+
+    res.status(200).json({
+        products,
+        message : "success getting products"
+    })
+})
+
+
 
 
 export {
-    createProductController
+    createProductController, 
+    getProductController
 }
