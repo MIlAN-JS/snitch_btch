@@ -41,7 +41,7 @@ const createProductController = asyncHandler(async (req, res) => {
     })
 
 
-const getProductController = asyncHandler(async(req,res)=>{
+const getSellerProductController = asyncHandler(async(req,res)=>{
     const seller = req.user
 
     const products = await getSellerProductsService(seller)
@@ -63,10 +63,21 @@ const getProductController = asyncHandler(async(req,res)=>{
     })
 })
 
+const getProductController = asyncHandler(async(req,res)=>{
+    const {id} = req.params
+
+    const product = await productModel.findById(id)
+
+    res.status(200).json({
+        product,
+        message : "success getting product"
+    })
+})
 
 
 export {
     createProductController, 
-    getProductController, 
-    getAllProductsController
+    getSellerProductController, 
+    getAllProductsController, 
+    getProductController
 }
