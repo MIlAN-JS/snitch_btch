@@ -116,7 +116,7 @@ const googleCallbackController = async (req, res, next) => {
     const userData = req.user;
 
   if (!userData) {
-    return res.redirect("http://localhost:5173/login");
+    return res.redirect("http://localhost:5175/login");
   }
 
   console.log(userData)
@@ -130,7 +130,7 @@ const googleCallbackController = async (req, res, next) => {
     sameSite: "lax",
   });
 
-  return res.redirect("http://localhost:5173/"); // changed from login to your route
+  return res.redirect("http://localhost:5175/"); // changed from login to your route
     
   } catch (error) {
 
