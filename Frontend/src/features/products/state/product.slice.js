@@ -19,7 +19,7 @@ const productSlice = createSlice({
         }, 
         productSuccessSeller : (state , action)=>{
             state.loading = false
-            state.SellerProducts.push(action.payload)
+            state.SellerProducts = action.payload
         }, 
         productSuccessAll : (state , action)=>{
             state.loading = false

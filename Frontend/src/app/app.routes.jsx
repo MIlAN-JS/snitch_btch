@@ -13,6 +13,7 @@ import SellerDashboard from "../features/products/ui/pages/Dashboard.jsx";
 import ProductListingPage from "../features/products/ui/pages/ProductListingPage.jsx";
 import ProductDetailPage from "../features/products/ui/pages/ProductDetailPage.jsx";
 import SellerProductDetailPage from "../features/products/ui/pages/SellerProductDetail.jsx";
+import SellerProductsPage from "../features/products/ui/pages/SellerProductPage.jsx";
 
 const router = createBrowserRouter([
 
@@ -51,9 +52,13 @@ const router = createBrowserRouter([
         element:<Protected role="seller"> <SellerDashboard/> </Protected>
     },
     {
-        path: "/seller/page/:id", 
+        path: "/seller/product/:id", 
         element : <SellerProductDetailPage/>
         
+    },
+    {
+        path: "/seller/products", 
+        element : <SellerProductsPage/>
     }
     
 

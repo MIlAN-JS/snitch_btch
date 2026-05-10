@@ -38,6 +38,7 @@ const getSellerProductsService = async()=>{
 
     const response = await api.get("/get-seller-products")
     return response.data
+    console.log(response.data , "service")
 
         
     } catch (error) {
@@ -98,6 +99,7 @@ const createVariantService = async({amount , currency , attributes , images , id
     
    }
 }
+
 export {
     createProductService , 
     getSellerProductsService,

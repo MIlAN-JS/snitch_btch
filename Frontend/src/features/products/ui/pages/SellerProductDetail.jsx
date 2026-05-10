@@ -14,10 +14,14 @@ import {
   MdOutlineCheckCircle,
   MdOutlineKeyboardArrowDown,
   MdOutlineKeyboardArrowUp,
+  MdOutlineWarning,
 } from "react-icons/md";
 import { RiBox3Line, RiImageAddLine } from "react-icons/ri";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { TbCurrencyEuro, TbCurrencyRupee, TbCurrencyWon } from "react-icons/tb";
+
+// 🔁 Replace with your actual hook path
+import useProduct from "../../hooks/useProduct";
 
 // ── Constants ──────────────────────────────────────────────
 const CURRENCIES = ["USD", "EUR", "INR", "KRW"];
@@ -32,40 +36,35 @@ const CURRENCY_ICONS = {
 const PRESET_ATTRIBUTES = ["Color", "Size", "Material", "Style", "Weight"];
 
 // ── Helpers ────────────────────────────────────────────────
-const emptyVariant = () => ({
+const emptyVariant = (defaultCurrency = "USD") => ({
   _tempId: Date.now() + Math.random(),
-  images: [],
+  images: [],       // { file, preview } for new | { url, alt } for existing
   stocks: 0,
   attributes: {},
-  price: { amount: 0, currency: "USD" },
-  _attrEntries: [{ key: "", value: "" }], // local UI state for attribute key-value pairs
+  price: { amount: 0, currency: defaultCurrency },
+  _attrEntries: [{ key: "", value: "" }],
+  _saved: false,
+  _saving: false,
+  _error: null,
 });
 
 // ── Loading Skeleton ───────────────────────────────────────
 const Skeleton = () => (
   <div className="animate-pulse space-y-6 max-w-4xl mx-auto px-4 py-8">
     <div className="h-8 bg-gray-200 rounded w-1/3" />
-    <div className="grid grid-cols-2 gap-4">
-      <div className="h-48 bg-gray-200 rounded-2xl" />
-      <div className="space-y-3">
-        <div className="h-6 bg-gray-200 rounded w-3/4" />
-        <div className="h-4 bg-gray-200 rounded w-1/2" />
-        <div className="h-10 bg-gray-200 rounded" />
-      </div>
-    </div>
-    <div className="h-40 bg-gray-200 rounded-2xl" />
+    <div className="h-24 bg-gray-200 rounded-2xl" />
+    <div className="h-64 bg-gray-200 rounded-2xl" />
   </div>
 );
 
 // ── Variant Card ───────────────────────────────────────────
-const VariantCard = ({ variant, index, onChange, onRemove }) => {
+const VariantCard = ({ variant, index, onChange, onRemove, onSave }) => {
   const [expanded, setExpanded] = useState(true);
   const fileInputRef = useRef(null);
 
   const handleAttrChange = (i, field, value) => {
     const updated = [...variant._attrEntries];
     updated[i] = { ...updated[i], [field]: value };
-    // rebuild attributes Map
     const attrs = {};
     updated.forEach(({ key, value: val }) => { if (key.trim()) attrs[key.trim()] = val; });
     onChange({ ...variant, _attrEntries: updated, attributes: attrs });
@@ -82,10 +81,10 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
     onChange({ ...variant, _attrEntries: updated, attributes: attrs });
   };
 
-  const handleImages = (files) => {
+  const handleImageFiles = (files) => {
     const mapped = Array.from(files)
       .filter(f => f.type.startsWith("image/"))
-      .map(file => ({ url: URL.createObjectURL(file), alt: "variant image", _file: file }));
+      .map(file => ({ file, preview: URL.createObjectURL(file), alt: "variant image" }));
     onChange({ ...variant, images: [...variant.images, ...mapped].slice(0, 4) });
   };
 
@@ -93,9 +92,17 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
     onChange({ ...variant, images: variant.images.filter((_, idx) => idx !== i) });
   };
 
+  // label shown in collapsed header
+  const attrLabel = Object.keys(variant.attributes).length > 0
+    ? Object.entries(variant.attributes).map(([k, v]) => `${k}: ${v}`).join(" · ")
+    : `Variant ${index + 1}`;
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      {/* Variant Header */}
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${
+      variant._error ? "border-red-300" : variant._saved ? "border-green-300" : "border-gray-200"
+    }`}>
+
+      {/* ── Header ──────────────────────────────────── */}
       <div
         className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-gray-50 transition"
         onClick={() => setExpanded(!expanded)}
@@ -105,13 +112,11 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
             {index + 1}
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">
-              {Object.keys(variant.attributes).length > 0
-                ? Object.entries(variant.attributes).map(([k, v]) => `${k}: ${v}`).join(" · ")
-                : `Variant ${index + 1}`}
-            </p>
+            <p className="text-sm font-semibold text-gray-900">{attrLabel}</p>
             <p className="text-xs text-gray-400 mt-0.5">
               {variant.price.currency} {variant.price.amount} · {variant.stocks} in stock
+              {variant._saved && <span className="ml-2 text-green-600 font-medium">✓ Saved</span>}
+              {variant._error && <span className="ml-2 text-red-500 font-medium">✗ Failed</span>}
             </p>
           </div>
         </div>
@@ -129,9 +134,17 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
         </div>
       </div>
 
-      {/* Variant Body */}
+      {/* ── Body ────────────────────────────────────── */}
       {expanded && (
         <div className="px-5 pb-5 space-y-5 border-t border-gray-100">
+
+          {/* Error banner */}
+          {variant._error && (
+            <div className="flex items-center gap-2 mt-4 px-3 py-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600">
+              <MdOutlineWarning size={15} />
+              {variant._error}
+            </div>
+          )}
 
           {/* Attributes */}
           <div className="pt-4">
@@ -141,21 +154,18 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
             <div className="space-y-2">
               {variant._attrEntries.map((entry, i) => (
                 <div key={i} className="flex gap-2 items-center">
-                  {/* Key - with preset dropdown feel */}
-                  <div className="relative flex-1">
-                    <input
-                      type="text"
-                      placeholder="e.g. Color"
-                      value={entry.key}
-                      onChange={(e) => handleAttrChange(i, "key", e.target.value)}
-                      list={`attr-presets-${variant._tempId}-${i}`}
-                      className="w-full h-9 px-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-gray-900 focus:bg-white transition placeholder-gray-400"
-                    />
-                    <datalist id={`attr-presets-${variant._tempId}-${i}`}>
-                      {PRESET_ATTRIBUTES.map(a => <option key={a} value={a} />)}
-                    </datalist>
-                  </div>
-                  <span className="text-gray-300 font-bold text-lg">:</span>
+                  <input
+                    type="text"
+                    placeholder="e.g. Color"
+                    value={entry.key}
+                    onChange={(e) => handleAttrChange(i, "key", e.target.value)}
+                    list={`attr-presets-${variant._tempId}-${i}`}
+                    className="flex-1 h-9 px-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-gray-900 focus:bg-white transition placeholder-gray-400"
+                  />
+                  <datalist id={`attr-presets-${variant._tempId}-${i}`}>
+                    {PRESET_ATTRIBUTES.map(a => <option key={a} value={a} />)}
+                  </datalist>
+                  <span className="text-gray-300 font-bold">:</span>
                   <input
                     type="text"
                     placeholder="e.g. Red"
@@ -177,9 +187,9 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
             <button
               type="button"
               onClick={addAttrRow}
-              className="mt-2 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-900 transition"
+              className="mt-2 flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-gray-900 transition"
             >
-              <MdOutlineAdd size={15} /> Add attribute
+              <MdOutlineAdd size={14} /> Add attribute
             </button>
           </div>
 
@@ -187,9 +197,7 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
           <div className="grid grid-cols-2 gap-4">
             {/* Price */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-                Price
-              </label>
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Price</label>
               <div className="flex gap-2">
                 <select
                   value={variant.price.currency}
@@ -216,9 +224,7 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
 
             {/* Stock */}
             <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-                Stock
-              </label>
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Stock</label>
               <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 h-9">
                 <button
                   type="button"
@@ -253,7 +259,12 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
             <div className="flex gap-2 flex-wrap">
               {variant.images.map((img, i) => (
                 <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 group bg-gray-100">
-                  <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                  {/* preview for new files, url for existing */}
+                  <img
+                    src={img.preview || img.url}
+                    alt={img.alt || "variant"}
+                    className="w-full h-full object-cover"
+                  />
                   <button
                     type="button"
                     onClick={() => removeImage(i)}
@@ -277,10 +288,35 @@ const VariantCard = ({ variant, index, onChange, onRemove }) => {
                 accept="image/*"
                 multiple
                 className="hidden"
-                onChange={(e) => handleImages(e.target.files)}
+                onChange={(e) => handleImageFiles(e.target.files)}
               />
             </div>
           </div>
+
+          {/* Save this variant */}
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={variant._saving}
+            className={`w-full h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95
+              ${variant._saved
+                ? "bg-green-600 text-white"
+                : "bg-gray-900 hover:bg-gray-700 text-white disabled:bg-gray-300"}`}
+          >
+            {variant._saving ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                Saving Variant...
+              </>
+            ) : variant._saved ? (
+              <><MdOutlineCheckCircle size={17} /> Variant Saved!</>
+            ) : (
+              <><MdOutlineSave size={17} /> Save Variant</>
+            )}
+          </button>
         </div>
       )}
     </div>
@@ -292,89 +328,116 @@ export default function SellerProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [product, setProduct]   = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [saving, setSaving]     = useState(false);
-  const [saved, setSaved]       = useState(false);
+  // ── Your custom hook ───────────────────────────────────
+  // Destructure whatever your hook exposes
+  const {
+    product,        // single product from state.product
+    SellerProducts, // all seller products from state.SellerProducts
+    loading,
+    error,
+    createVariantHandler,
+    getProductHandler,  // call this to load the product by id — rename to match your hook
+  } = useProduct();
+
   const [variants, setVariants] = useState([]);
   const [activeTab, setActiveTab] = useState("details");
   const mainFileRef = useRef(null);
 
-  // ── Fetch product ────────────────────────────────────────
+  // ── Load product on mount ──────────────────────────────
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/products/${id}`);
-        const data = await res.json();
-        setProduct(data);
-
-        // Normalize existing variants from DB
-        const normalized = (data.variants || []).map(v => ({
-          ...v,
-          _tempId: v._id || Date.now() + Math.random(),
-          _attrEntries: Object.entries(v.attributes || {}).length > 0
-            ? Object.entries(v.attributes).map(([key, value]) => ({ key, value }))
-            : [{ key: "", value: "" }],
-        }));
-        setVariants(normalized);
-      } catch (err) {
-        console.error("Failed to fetch product:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProduct();
+    if (id) {
+      // 🔁 Replace with the handler name from your hook that fetches a single product
+      getProductHandler(id);
+    }
   }, [id]);
 
-  // ── Variant CRUD ─────────────────────────────────────────
-  const addVariant = () => {
-    const base = emptyVariant();
-    // inherit price currency from product
-    if (product?.price?.currency) {
-      base.price.currency = product.price.currency;
+  // ── Sync existing variants from redux state ────────────
+  useEffect(() => {
+    if (product?.variants?.length > 0) {
+      const normalized = product.variants.map(v => ({
+        ...v,
+        _tempId: v._id || Date.now() + Math.random(),
+        // Convert mongoose Map back to key-value entries for UI
+        _attrEntries: v.attributes && Object.keys(v.attributes).length > 0
+          ? Object.entries(v.attributes).map(([key, value]) => ({ key, value }))
+          : [{ key: "", value: "" }],
+        _saved: false,
+        _saving: false,
+        _error: null,
+      }));
+      setVariants(normalized);
     }
-    setVariants(prev => [...prev, base]);
+  }, [product]);
+
+  // ── Add new empty variant ──────────────────────────────
+  const addVariant = () => {
+    setVariants(prev => [...prev, emptyVariant(product?.price?.currency || "USD")]);
     setActiveTab("variants");
   };
 
+  // ── Update variant in local state ─────────────────────
   const updateVariant = (tempId, updated) => {
     setVariants(prev => prev.map(v => v._tempId === tempId ? updated : v));
   };
 
+  // ── Remove variant from local state ───────────────────
   const removeVariant = (tempId) => {
     setVariants(prev => prev.filter(v => v._tempId !== tempId));
   };
 
-  // ── Save ─────────────────────────────────────────────────
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      // Strip local-only UI fields before sending to API
-      const payload = variants.map(({ _tempId, _attrEntries, ...rest }) => rest);
+  // ── Save a single variant via your handler ─────────────
+  // Matches your createVariantHandler signature exactly:
+  // { amount, currency, attributes, images, id }
+  const handleSaveVariant = async (tempId) => {
+    const variant = variants.find(v => v._tempId === tempId);
+    if (!variant) return;
 
-      await fetch(`/api/products/${id}/variants`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ variants: payload }),
+    // Mark as saving
+    updateVariant(tempId, { ...variant, _saving: true, _error: null });
+
+    try {
+      // Extract only the actual File objects from images array
+      // (new uploads have .file, existing DB images have .url only)
+      const imageFiles = variant.images
+        .filter(img => img.file instanceof File)
+        .map(img => img.file);
+
+      await createVariantHandler({
+        amount:     variant.price.amount,
+        currency:   variant.price.currency,
+        attributes: variant.attributes,  // plain object — your service does JSON.stringify
+        images:     imageFiles,          // array of File objects
+        id,                              // product id from useParams
       });
 
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      // Mark as saved
+      updateVariant(tempId, { ...variant, _saving: false, _saved: true, _error: null });
+
+      // Reset saved badge after 3s
+      setTimeout(() => {
+        setVariants(prev =>
+          prev.map(v => v._tempId === tempId ? { ...v, _saved: false } : v)
+        );
+      }, 3000);
+
     } catch (err) {
-      console.error("Failed to save variants:", err);
-    } finally {
-      setSaving(false);
+      updateVariant(tempId, {
+        ...variant,
+        _saving: false,
+        _saved: false,
+        _error: err?.message || "Failed to save variant. Please try again.",
+      });
     }
   };
 
-  // ── Normalize product fields ─────────────────────────────
+  // ── Normalize product fields from redux state ──────────
   const name        = product?.title || product?.name || "Product";
   const description = product?.description || "";
   const amount      = product?.price?.amount ?? 0;
   const currency    = product?.price?.currency || "USD";
   const images      = product?.images || [];
 
+  // ── Loading / Error ────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -385,6 +448,24 @@ export default function SellerProductDetailPage() {
           <span className="text-sm font-semibold text-gray-900">Vendora</span>
         </header>
         <Skeleton />
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <MdOutlineWarning size={48} className="text-gray-200 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-gray-900">Something went wrong</h2>
+          <p className="text-sm text-gray-400 mt-1 mb-4">{error || "Product not found."}</p>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-700 transition"
+          >
+            Back to Dashboard
+          </button>
+        </div>
       </div>
     );
   }
@@ -412,38 +493,13 @@ export default function SellerProductDetailPage() {
             <span className="mx-1">›</span>
             <span className="text-gray-700 font-medium truncate max-w-[200px]">{name}</span>
           </div>
-
-          {/* Save button */}
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className={`ml-auto flex items-center gap-2 px-4 h-9 rounded-xl text-sm font-medium transition-all active:scale-95
-              ${saved
-                ? "bg-green-600 text-white"
-                : "bg-gray-900 hover:bg-gray-700 text-white disabled:bg-gray-400"}`}
-          >
-            {saving ? (
-              <>
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                </svg>
-                Saving...
-              </>
-            ) : saved ? (
-              <><MdOutlineCheckCircle size={17} /> Saved!</>
-            ) : (
-              <><MdOutlineSave size={17} /> Save Changes</>
-            )}
-          </button>
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
-        {/* ── Product Summary Card ─────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex gap-4">
-          {/* Thumbnail */}
+        {/* ── Product Summary ──────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex gap-4 items-center">
           <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden border border-gray-200">
             {images[0]?.url
               ? <img src={images[0].url} alt={name} className="w-full h-full object-cover" />
@@ -452,7 +508,7 @@ export default function SellerProductDetailPage() {
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-gray-900 truncate">{name}</h1>
             <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">{description}</p>
-            <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
               <span className="text-sm font-semibold text-gray-900">{currency} {amount}</span>
               <span className="text-xs text-gray-300">·</span>
               <span className="text-xs text-gray-500">{variants.length} variant{variants.length !== 1 ? "s" : ""}</span>
@@ -468,7 +524,7 @@ export default function SellerProductDetailPage() {
           </button>
         </div>
 
-        {/* ── Tabs ────────────────────────────────────── */}
+        {/* ── Tabs ─────────────────────────────────────── */}
         <div className="flex border-b border-gray-200">
           {["details", "variants"].map(tab => (
             <button
@@ -492,7 +548,7 @@ export default function SellerProductDetailPage() {
           ))}
         </div>
 
-        {/* ── Details Tab ─────────────────────────────── */}
+        {/* ── Details Tab ──────────────────────────────── */}
         {activeTab === "details" && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
             <h2 className="text-sm font-semibold text-gray-900">Product Images</h2>
@@ -552,17 +608,13 @@ export default function SellerProductDetailPage() {
           </div>
         )}
 
-        {/* ── Variants Tab ────────────────────────────── */}
+        {/* ── Variants Tab ─────────────────────────────── */}
         {activeTab === "variants" && (
           <div className="space-y-4">
-
-            {/* Header */}
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-bold text-gray-900">Product Variants</h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Add variants like different colors, sizes, or materials.
-                </p>
+                <p className="text-xs text-gray-400 mt-0.5">Each variant is saved individually to your API.</p>
               </div>
               <button
                 type="button"
@@ -579,7 +631,7 @@ export default function SellerProductDetailPage() {
                 <MdOutlineInventory2 size={40} className="text-gray-200 mb-3" />
                 <h3 className="text-sm font-semibold text-gray-700">No variants yet</h3>
                 <p className="text-xs text-gray-400 mt-1 mb-4 max-w-xs">
-                  Add variants to offer different options like colors, sizes, or materials to your buyers.
+                  Add variants to offer different colors, sizes, or materials to your buyers.
                 </p>
                 <button
                   onClick={addVariant}
@@ -598,6 +650,7 @@ export default function SellerProductDetailPage() {
                 index={index}
                 onChange={(updated) => updateVariant(variant._tempId, updated)}
                 onRemove={() => removeVariant(variant._tempId)}
+                onSave={() => handleSaveVariant(variant._tempId)}
               />
             ))}
 
@@ -610,22 +663,6 @@ export default function SellerProductDetailPage() {
               >
                 <MdOutlineAdd size={18} /> Add Another Variant
               </button>
-            )}
-
-            {/* Payload preview — helpful during dev */}
-            {variants.length > 0 && (
-              <details className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs">
-                <summary className="text-gray-500 cursor-pointer font-medium select-none">
-                  🛠 Preview API payload
-                </summary>
-                <pre className="mt-3 overflow-x-auto text-gray-600 leading-relaxed">
-                  {JSON.stringify(
-                    variants.map(({ _tempId, _attrEntries, ...rest }) => rest),
-                    null,
-                    2
-                  )}
-                </pre>
-              </details>
             )}
           </div>
         )}
