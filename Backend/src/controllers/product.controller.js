@@ -75,9 +75,57 @@ const getProductController = asyncHandler(async(req,res)=>{
 })
 
 
+const createProductVariantController = asyncHandler(async(req,res)=>{
+
+const files = req.files
+let imgs = []
+
+if(files || files.length > 0){
+
+    await Promise.all(files.map(async(file)=>{
+        return await uploadFile({
+            buffer : file.buffer,
+            fileName : file.originalname
+        })
+    })).map((img)=>{
+        imgs.push(img)
+    })
+
+
+    
+}
+
+const {price, stock } = req.body
+const attributes = JSON.parse(req.body.attributes|| "{}")
+const productId = req.params.productId
+
+const product = await productModel.findOne({
+    _id : productId, 
+    seller : req.user
+})
+
+if(!product){
+    return res.status(404).json({
+        message : "Product not found"
+    })
+}
+
+
+
+console.log(price , stock, product , attributes)
+
+
+
+    
+
+
+})
+
 export {
     createProductController, 
     getSellerProductController, 
     getAllProductsController, 
-    getProductController
+    getProductController,
+    createProductVariantController
+
 }

@@ -10,16 +10,22 @@ import CreateProductPage from "../features/products/ui/pages/CreateProduct.jsx";
 
 import Protected from "../features/auth/ui/components/Protected.jsx";
 import SellerDashboard from "../features/products/ui/pages/Dashboard.jsx";
+import ProductListingPage from "../features/products/ui/pages/ProductListingPage.jsx";
+import ProductDetailPage from "../features/products/ui/pages/ProductDetailPage.jsx";
 
 const router = createBrowserRouter([
 
     {
         path: "/",
-        element:<App/>,
+        element:<Protected role="buyer"><App/></Protected>,
         children : [
             {
-                path: "/random",
-                element: <Random/>
+                path: "",
+                element: <ProductListingPage/>
+            }, 
+            {
+                path : "/product/:id",
+                element : <ProductDetailPage/>
             }
         ]
     },
@@ -42,6 +48,10 @@ const router = createBrowserRouter([
     {
         path: "/dashboard",
         element:<Protected role="seller"> <SellerDashboard/> </Protected>
+    },
+    {
+
+        
     }
     
 

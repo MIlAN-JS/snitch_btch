@@ -48,8 +48,37 @@ const getSellerProductsService = async()=>{
 
 }
 
+const getAllProductService = async()=>{
+    try {
+
+        const response = await api.get("/get-all-products")
+        console.log(response)
+        return response.data
+        
+    } catch (error) {
+        throw error
+        
+    }
+}
+
+
+const getProductService = async(id)=>{
+    try {
+
+        const response = await api.get(`/get-product/${id}`)
+        console.log(response)
+        console.log(response.data)
+        return response.data
+        
+    } catch (error) {
+        throw error
+        
+    }
+}
 
 export {
     createProductService , 
-    getSellerProductsService
+    getSellerProductsService,
+    getAllProductService,
+    getProductService
 }

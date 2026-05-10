@@ -1,8 +1,10 @@
 import {createSlice} from "@reduxjs/toolkit"
 
 const initialState = {
-    SellerProducts : [], 
-    loading : false, 
+    SellerProducts : [],
+    allProducts : [], 
+    product : null,
+    loading : true, 
     error : null, 
 }
 
@@ -15,10 +17,18 @@ const productSlice = createSlice({
             state.loading = true
             state.error = null
         }, 
-        productSuccess : (state , action)=>{
+        productSuccessSeller : (state , action)=>{
             state.loading = false
             state.SellerProducts.push(action.payload)
         }, 
+        productSuccessAll : (state , action)=>{
+            state.loading = false
+            state.allProducts = action.payload
+        }, 
+        productSuccess : (state , action)=>{
+            state.product = action.payload
+            state.loading = false
+        },
         productFailure : (state , action)=>{
             state.loading = false
             state.error = action.payload
@@ -32,5 +42,5 @@ const productSlice = createSlice({
 })
 
 
-export const {productStart , productSuccess , productFailure , clearError} = productSlice.actions
+export const {productStart , productSuccessSeller , productSuccessAll , productFailure , clearError, productSuccess}  = productSlice.actions
 export default productSlice.reducer
