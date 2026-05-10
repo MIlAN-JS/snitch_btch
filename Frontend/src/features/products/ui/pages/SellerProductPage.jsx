@@ -237,8 +237,8 @@ export default function SellerProductsPage() {
   const outOfStock     = products.filter(p => p.stock === 0).length;
 
   // ── Handlers ───────────────────────────────────────────
-  const handleView   = (id) => navigate(`/seller/products/${id}`);
-  const handleEdit   = (id) => navigate(`/seller/products/${id}/edit`);
+  const handleView   = (id) => navigate(`/seller/product/${id}`);
+  const handleEdit   = (id) => navigate(`/seller/product/${id}/edit`);
   const handleDelete = (id) => {
     // 🔁 Wire up your deleteProductHandler here
     console.log("Delete product:", id);
@@ -272,7 +272,7 @@ export default function SellerProductsPage() {
 
           {/* Add product */}
           <button
-            onClick={() => navigate("/seller/products/create")}
+            onClick={() => navigate("/seller/product/create")}
             className="ml-auto flex items-center gap-1.5 px-4 h-9 bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium rounded-xl transition active:scale-95"
           >
             <MdOutlineAdd size={18} /> New Product

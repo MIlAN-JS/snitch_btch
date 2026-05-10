@@ -22,6 +22,7 @@ import { TbCurrencyEuro, TbCurrencyRupee, TbCurrencyWon } from "react-icons/tb";
 
 // 🔁 Replace with your actual hook path
 import useProduct from "../../hooks/useProduct";
+import { useSelector } from "react-redux";
 
 // ── Constants ──────────────────────────────────────────────
 const CURRENCIES = ["USD", "EUR", "INR", "KRW"];
@@ -331,13 +332,20 @@ export default function SellerProductDetailPage() {
   // ── Your custom hook ───────────────────────────────────
   // Destructure whatever your hook exposes
   const {
-    product,        // single product from state.product
-    SellerProducts, // all seller products from state.SellerProducts
-    loading,
-    error,
-    createVariantHandler,
-    getProductHandler,  // call this to load the product by id — rename to match your hook
+    getProductHandler,
+    createVariantHandler  // call this to load the product by id — rename to match your hook
   } = useProduct();
+
+//   product,        // single product from state.product
+//     SellerProducts, // all seller products from state.SellerProducts
+//     loading,
+//     error,
+//     createVariantHandler,
+
+const product = useSelector(state => state.product.product);
+const loading = useSelector(state => state.product.loading);
+const SellerProducts = useSelector(state => state.product.SellerProducts);
+const error = useSelector(state => state.product.error);
 
   const [variants, setVariants] = useState([]);
   const [activeTab, setActiveTab] = useState("details");
