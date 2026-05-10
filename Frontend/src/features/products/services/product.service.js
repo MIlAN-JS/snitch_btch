@@ -76,9 +76,32 @@ const getProductService = async(id)=>{
     }
 }
 
+
+const createVariantService = async({amount , currency , attributes , images , id})=>{
+
+   try {
+
+     const formData = new formData()
+
+    formData.append("amount" , amount)
+    formData.append("currency" , currency)
+    formData.append("attributes" , JSON.stringify(attributes))
+    formData.append("images" , images);
+
+
+    const response =await api.post(`add-product-variant/:${id}`, formData)
+    return response.data
+    
+   } catch (error) {
+
+    throw error
+    
+   }
+}
 export {
     createProductService , 
     getSellerProductsService,
     getAllProductService,
-    getProductService
+    getProductService, 
+    createVariantService
 }
