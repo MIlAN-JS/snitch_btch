@@ -18,11 +18,11 @@ import SellerProductsPage from "../features/products/ui/pages/SellerProductPage.
 const router = createBrowserRouter([
 
     {
-        path: "/",
-        element:<Protected role="buyer"><App/></Protected>,
+        path: "",
+        element: <App/>,
         children : [
             {
-                path: "",
+                path: "/",
                 element: <ProductListingPage/>
             }, 
             {
@@ -57,7 +57,7 @@ const router = createBrowserRouter([
         
     },
     {
-        path: "/seller/products", 
+        path: "/doc", 
         element : <SellerProductsPage/>
     }
     
