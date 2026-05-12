@@ -82,21 +82,20 @@ let imgs = []
 
 if(files || files.length > 0){
 
-    await Promise.all(files.map(async(file)=>{
+   const uploadedImages = await Promise.all(files.map(async(file)=>{
         return await uploadFile({
             buffer : file.buffer,
             fileName : file.originalname
         })
-    })).map((img)=>{
-        imgs.push(img)
-    })
+    }))
 
+    imgs.push(...uploadedImages)
 
     
 }
 
-const {price, stock } = req.body
-const attributes = JSON.parse(req.body.attributes|| "{}")
+const {amount ,currency ,  stocks } = req.body
+const attributes = req.body.attributes?  JSON.parse(req.body.attributes) : undefined
 const productId = req.params.productId
 
 const product = await productModel.findOne({
@@ -110,9 +109,23 @@ if(!product){
     })
 }
 
+console.log(req.body)
+product.variants.push({
+    images : imgs,
+    attributes : {attributes},
+    price : {
+        amount,
+        currency
+    },
+    stocks : Number(stocks)
+})
 
+product.save()
 
-console.log(price , stock, product , attributes)
+return res.status(200).json({
+    message : "success creating product variant",
+    product
+})
 
 
 
