@@ -1,0 +1,16 @@
+#imported base layer (node js v20 linux alpine os )
+FROM node:20-alpine 
+
+
+COPY ./package-lock.json . 
+COPY ./package.json .
+
+
+RUN npm install
+
+COPY . . 
+
+CMD ["npm" , "run" , "dev"]
+
+
+
